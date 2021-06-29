@@ -1,10 +1,10 @@
 package us.zoom.checkin.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -20,6 +20,7 @@ import us.zoom.checkin.service.impl.QuestionServiceImpl;
 import us.zoom.checkin.service.impl.RecordServiceImpl;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.*;
 
 @Slf4j
@@ -68,16 +69,11 @@ public class PaperController {
 
     @ApiOperation("提交问卷答题")
     @PostMapping("/submit")
-    public List<Answer> submitPaperAnswer(@RequestBody Map<String,Object> params){
-//        if (Strings.isNullOrEmpty(paperId) || answers == null || answers.size()==0){
-//            throw new APIException("请求参数异常");
-//        }
-//        List<Object> ids = answerService.listObjs(new QueryWrapper<Answer>().select("id").eq("paper_id", paperId));
-//        List<Object> questionIds = questionService.listObjs(new QueryWrapper<Question>().select("id").eq("paper_id", paperId));
-        List<Answer> answers = (List<Answer>) params.get("answers");
+    public String submitPaperAnswer(@RequestBody Map<String,Object> params) throws IOException {
+        List<Map> answersMap = (List<Map>) params.get("answers");
         String respondentId = (String) params.get("respondentId");
         String paperId = (String) params.get("paperId");
-        if(answers == null || answers.size() == 0){
+        if(answersMap == null || answersMap.size() == 0){
             throw new APIException("提交信息不能为空");
         }
         if(recordService.getOne(new QueryWrapper<Record>().eq("paper_id",paperId).eq("respondent_id",respondentId))!=null){
@@ -88,11 +84,16 @@ public class PaperController {
         record.setPaperId(paperId);
         record.setRespondentId(respondentId);
         double bill = 0;
-        for(Answer answer:answers){
-            System.out.println("追加购买:"+answer.getAdditionalPurchase());
+        ObjectMapper mapper = new ObjectMapper();
+        List<Answer> answers = new ArrayList<>();
+        for(Map answerMap:answersMap){
+            Answer answer = mapper.readValue(mapper.writeValueAsString(answerMap), Answer.class);
+            answer.setRespondentId(respondentId);
+            answer.setPaperId(paperId);
             if(answer.getAdditionalPurchase()==1){
                 bill+=answer.getAmount()*answer.getValue();
             }
+            answers.add(answer);
         }
         record.setBill(bill);
         Random random = new Random();
@@ -100,9 +101,8 @@ public class PaperController {
         record.setCode(i+"");
         recordService.save(record);
         answerService.saveBatch(answers);
-        return answerService.list();
 
-//        return questionIds;
+        return "success";
     }
 
     @ApiOperation("问卷统计")
@@ -116,8 +116,8 @@ public class PaperController {
         for(Answer answer:answers){
             if(maps.containsKey(answer.getTitle())){
                 Map<String, Integer> map = maps.get(answer.getTitle());
-                Integer sum = map.get("sum");
-                map.put("sum",sum+1);
+                Integer sum = map.get("总计");
+                map.put("总计",sum+1);
                 String answerOption = answer.getAnswerOption();
                 if(map.containsKey(answerOption)){
                     map.put(answerOption,map.get(answerOption)+answer.getAmount());
@@ -126,7 +126,7 @@ public class PaperController {
                 }
             }else{
                 HashMap<String, Integer> map = new HashMap<>();
-                map.put("sum",answer.getAmount());
+                map.put("总计",answer.getAmount());
                 map.put(answer.getAnswerOption(),answer.getAmount());
                 maps.put(answer.getTitle(),map);
             }
