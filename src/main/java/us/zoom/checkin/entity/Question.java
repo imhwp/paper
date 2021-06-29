@@ -1,36 +1,56 @@
 package us.zoom.checkin.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import java.sql.Date;
 
 @Data
+@ApiModel("问题实体")
+@TableName("question")
+@Builder
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class Question {
+
     @ApiModelProperty("问题ID")
-    @Id
-    @Column(name = "id")
-    private String questionId;
+    @TableId(value = "Id",type = IdType.AUTO)
+    private Long questionId;
 
     @ApiModelProperty("问卷ID")
-    @Column(name = "paper_id")
+    @TableField(value = "paper_id")
     private String paperId;
 
     @ApiModelProperty("问题标题")
-    @Column(name = "title")
+    @TableField(value = "title")
     private String title;
 
-    @ApiModelProperty("问题创建时间")
-    @Column(name = "create_date")
-    private Date createDate;
 
     @ApiModelProperty("问题类型")
-    @Column(name = "type")
+    @TableField(value = "type")
     private int type;
 
     @ApiModelProperty("问题选项")
-    @Column(name = "option")
-    private String option;
+    @TableField(value = "question_option")
+    private String questionOption;
+
+    @ApiModelProperty("价值")
+    @TableField(value = "value")
+    private double value;
+
+    @ApiModelProperty("是否是加购产品")
+    @TableField(value = "additional_purchase")
+    private int additionalPurchase;
+
+    @ApiModelProperty("产品数量")
+    @TableField(value = "amount")
+    private int amount;
+
 }

@@ -1,4 +1,4 @@
-package us.zoom.checkin.global;
+package us.zoom.checkin.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

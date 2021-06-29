@@ -1,7 +1,7 @@
 package us.zoom.checkin.Exception;
 
 import lombok.Getter;
-import us.zoom.checkin.global.ResultCode;
+import us.zoom.checkin.common.ResultCode;
 
 @Getter //只要getter方法，无需setter
 public class APIException extends RuntimeException {

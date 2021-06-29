@@ -1,46 +1,75 @@
 package us.zoom.checkin.entity;
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+import lombok.*;
 
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.sql.Date;
 
+
 @Data
-@Table(name = "answer")
 @ApiModel("答案实体")
+@TableName("answer")
+@Builder
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class Answer {
 
     @ApiModelProperty("答案ID")
-    @Id
-    @Column(name = "id")
-    private String id;
+    @TableId(value = "id",type = IdType.AUTO)
+    private Long answerId;
 
-    @ApiModelProperty("问卷ID")
-    @Column(name = "paper_id")
-    private String paperId;
+    @NotEmpty(message = "问卷描述信息不能为空")
+    @ApiModelProperty("问题标题")
+    @TableField(value = "title")
+    private String title;
+
 
     @ApiModelProperty("答案类型")
-    @Column(name = "type")
+    @NotNull(message = "答案类型不能为空")
+    @TableField(value = "type")
     private int type;
 
-    @ApiModelProperty("回答时间")
-    @Column(name = "answer_date")
-    private Date answerDate;
-
     @ApiModelProperty("答题结果")
-    @Column(name = "option")
-    private String option;
-
-    @ApiModelProperty("所属问卷ID")
-    @Column(name = "question_id")
-    private String questionId;
+    @NotEmpty(message = "答案结果不能为空")
+    @TableField(value = "answer_option")
+    private String answerOption;
 
     @ApiModelProperty("答题人ID")
-    @Column(name = "respondent_id")
+    @NotEmpty(message = "答题人不能为空")
+    @TableField(value = "respondent_id")
     private String respondentId;
+
+    @NotNull(message = "价值不能为空")
+    @ApiModelProperty("价值")
+    @TableField(value = "value")
+    private double value;
+
+    @ApiModelProperty("产品数量")
+    @NotNull(message = "产品数量不能为空")
+    @TableField(value = "amount")
+    private int amount;
+
+    @NotNull(message = "产品数量不能为空")
+    @ApiModelProperty("问卷ID")
+    @TableField(value = "paper_id")
+    private String paperId;
+
+    @NotNull(message = "产品数量不能为空")
+    @ApiModelProperty("问题ID")
+    @TableField(value = "question_id")
+    private String questionId;
+
+    @ApiModelProperty("是否是加购产品")
+    @TableField(value = "additional_purchase")
+    private int additionalPurchase;
+
+
 }

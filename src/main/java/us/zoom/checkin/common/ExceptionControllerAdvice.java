@@ -1,4 +1,4 @@
-package us.zoom.checkin.global;
+package us.zoom.checkin.common;
 
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,4 +21,11 @@ public class ExceptionControllerAdvice {
         // 注意哦，这里传递的响应码枚举
         return new ResultVO<>(ResultCode.VALIDATE_FAILED, objectError.getDefaultMessage());
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResultVO<String> exceptionHandler(Exception e) {
+        // 注意哦，这里传递的响应码枚举
+        return new ResultVO<>(ResultCode.ERROR,"");
+    }
+
 }

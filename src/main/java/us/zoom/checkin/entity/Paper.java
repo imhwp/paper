@@ -1,45 +1,66 @@
 package us.zoom.checkin.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import java.sql.Date;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+import java.util.List;
 
 @Data
+@Builder
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName(value = "paper")
 public class Paper {
 
     @ApiModelProperty("问卷ID")
-    @Id
-    @Column(name = "id")
+    @TableId(value = "id")
     private String paperId;
 
+    @NotEmpty(message = "创建人不能为空")
     @ApiModelProperty("创建人ID")
-    @Column(name = "creator_id")
+    @TableField(value = "creator_id")
     private String creatorId;
 
+    @NotEmpty(message = "问卷标题不能为空")
     @ApiModelProperty("问卷标题")
-    @Column(name = "title")
+    @TableField(value = "title")
     private String title;
 
     @ApiModelProperty("创建时间")
-    @Column(name = "create_date")
+    @TableField(value = "create_date")
     private Date createDate;
 
+    @NotNull(message = "问卷状态不能为空")
     @ApiModelProperty("问卷状态")
-    @Column(name = "status")
+    @TableField(value = "status")
     private int status;
 
+    @NotNull(message = "问卷开始时间不能为空")
     @ApiModelProperty("问卷开始时间")
-    @Column(name = "begin_time")
+    @TableField(value = "begin_time")
     private Date beginTime;
 
+    @NotNull(message = "问卷结束时间不能为空")
     @ApiModelProperty("问卷结束时间")
-    @Column(name = "end_time")
-    private Date endTTime;
+    @TableField(value = "end_time")
+    private Date endTime;
 
+    @NotEmpty(message = "问卷描述信息不能为空")
     @ApiModelProperty("问卷描述信息")
-    @Column(name = "detail")
+    @TableField(value = "detail")
     private String detail;
+
+    @NotEmpty(message = "问卷问题不能为空")
+    @ApiModelProperty("问卷对应的问题列表")
+    @TableField(exist = false)
+    private List<Question> questions;
 }
