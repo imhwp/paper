@@ -1,11 +1,12 @@
 package us.zoom.checkin.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -47,11 +48,13 @@ public class Paper {
     @NotNull(message = "问卷开始时间不能为空")
     @ApiModelProperty("问卷开始时间")
     @TableField(value = "begin_time")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     private Date beginTime;
 
     @NotNull(message = "问卷结束时间不能为空")
     @ApiModelProperty("问卷结束时间")
     @TableField(value = "end_time")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     private Date endTime;
 
     @NotEmpty(message = "问卷描述信息不能为空")

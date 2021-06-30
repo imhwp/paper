@@ -24,7 +24,7 @@ public class LoginController {
     @Autowired
     private QuestionServiceImpl questionService;
 
-    @RequestMapping("/test")
+    @RequestMapping("/login")
     public Paper login(int paperId){
         Paper paper = paperService.getById(paperId);
         List<Question> questions = questionService.list(new QueryWrapper<Question>().eq("paper_id",paperId));

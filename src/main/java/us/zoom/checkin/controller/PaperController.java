@@ -101,7 +101,6 @@ public class PaperController {
         record.setCode(i+"");
         recordService.save(record);
         answerService.saveBatch(answers);
-
         return "success";
     }
 
@@ -141,6 +140,9 @@ public class PaperController {
             throw new APIException("请求参数有误");
         }
         Record record = recordService.getOne(new QueryWrapper<Record>().eq("paper_id", paperId).eq("code", code));
+        if(record == null){
+            throw new APIException("验证码无效");
+        }
         if(record.getClaimTime()!=null && record.getClaimTime().before(new Date())){
             throw new APIException("该福利已经被领取，领取时间："+record.getClaimTime().toString());
         }
@@ -198,6 +200,58 @@ public class PaperController {
         maps.put("未登记",unfilledSet);
         maps.put("已登记未领取",unclaimedSet);
         maps.put("已领取",claimedSet);
+        return maps;
+    }
+
+    @ApiOperation("查询单个用户问卷回答情况")
+    @PostMapping("/query")
+    public Map<String, Object> queryById(String paperId, String userId){
+        if(Strings.isNullOrEmpty(paperId) || Strings.isNullOrEmpty(userId)){
+            throw new APIException("请求参数有误");
+        }
+
+        Record record = recordService.getOne(new QueryWrapper<Record>().eq("paper_id", paperId).eq("respondent_id", userId));
+//        if(record.getClaimTime()!=null && record.getClaimTime().before(new Date())){
+//            throw new APIException("该福利已经被领取，领取时间："+record.getClaimTime().toString());
+//        }
+        Map<String,Object> maps = new HashMap<>();
+        maps.put("用户",userId);
+        if (record == null){
+            maps.put("表单状态","该用户尚未登记表单");
+            return maps;
+        }
+        List<Answer> answers = answerService.list(new QueryWrapper<Answer>().eq("respondent_id", userId).eq("paper_id", paperId));
+
+        Map<String,Map<String, Integer>> goods = new HashMap<>();
+        for(Answer answer:answers){
+            String title = answer.getTitle();
+            if(goods.containsKey(title)){
+                //如果包含
+                Map<String,Integer> map = goods.get(title);
+                if(map.containsKey(answer.getAnswerOption())){
+                    int amount = map.get(answer.getAnswerOption());
+                    map.put(answer.getAnswerOption(),amount+answer.getAmount());
+                }else{
+                    map.put(answer.getAnswerOption(),answer.getAmount());
+                }
+
+            }else{
+                Map<String,Integer> map = new HashMap<>();
+                map.put(answer.getAnswerOption(),answer.getAmount());
+                goods.put(answer.getTitle(),map);
+            }
+        }
+        String status = record.getClaimTime()==null?"登记未领取":"已领取";
+        maps.put("表单状态",status);
+        maps.put("物品列表",goods);
+        maps.put("验证码",record.getCode());
+        if(record.getBill()>0)
+            maps.put("加购账单",record.getBill());
+        if(record.getClaimTime()==null){
+            maps.put("领取时间","暂未领取");
+        }else{
+            maps.put("领取时间",record.getClaimTime().toString());
+        }
         return maps;
     }
 
