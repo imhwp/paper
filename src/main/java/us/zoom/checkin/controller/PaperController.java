@@ -37,6 +37,8 @@ public class PaperController {
     @Autowired
     RecordServiceImpl recordService;
 
+    private static final int ADDITIONAL_PURCHASE = 1;
+
     @ApiOperation("获取所有问卷信息")
     @PostMapping("/list")
     public List<Paper> getAllPaper(){
@@ -48,6 +50,7 @@ public class PaperController {
     @PostMapping("/get")
     public Paper getOnePaper(String paperId){
         if(Strings.isNullOrEmpty(paperId)){
+            log.error("问卷ID为空");
             throw new APIException("请求参数非法");
         }
         Paper paper = paperService.findPaper(paperId);
@@ -130,6 +133,76 @@ public class PaperController {
                 maps.put(answer.getTitle(),map);
             }
         }
+        return maps;
+    }
+
+    @ApiOperation("问卷统计")
+    @PostMapping("/additionalPurchase")
+    public HashMap<String, Object> summaryAdditionalPurchase(String paperId){
+        if(Strings.isNullOrEmpty(paperId)){
+            throw new APIException("请求参数有误");
+        }
+        List<Answer> answers = answerService.list(new QueryWrapper<Answer>().eq("paper_id", paperId).eq("additional_purchase",ADDITIONAL_PURCHASE));
+        HashMap<String,Object> maps = new HashMap<>();
+        //加购总共金额，分类统计，按人员统计
+        HashMap<String,Object> typeMap = new HashMap<>();
+        HashMap<String,Object> userMap = new HashMap<>();
+        double money = 0;
+        for(Answer answer:answers){
+            String respondentId = answer.getRespondentId();
+            money+=answer.getAmount()*answer.getValue();
+            if(userMap.containsKey(respondentId)){
+                Map map = (Map) userMap.get(respondentId);
+                double total_value = (double) map.get("合计金额");
+                total_value+=answer.getValue()*answer.getAmount();
+                map.put("合计金额",total_value);
+                Map<String,Object> goods = new HashMap<>();
+                List<Map> goodsList = null;
+                if(map.containsKey(answer.getTitle())){
+                    goodsList = (List<Map>) map.get(answer.getTitle());
+                    goods.put("型号",answer.getAnswerOption());
+                    goods.put("数量",answer.getAmount());
+                    goods.put("总额",answer.getAmount()*answer.getValue());
+                    goodsList.add(goods);
+                }else{
+                    goodsList = new ArrayList<>();
+                    goods.put("型号",answer.getAnswerOption());
+                    goods.put("数量",answer.getAmount());
+                    goods.put("总额",answer.getAmount()*answer.getValue());
+                    goodsList.add(goods);
+                    map.put(answer.getTitle(),goodsList);
+                }
+            }else{
+                Map<String,Object> map = new HashMap();
+                double total_value = answer.getValue()*answer.getAmount();
+                map.put("合计金额",total_value);
+                Map<String,Object> goods = new HashMap<>();
+                List goodsList = new ArrayList<>();
+                goods.put("型号",answer.getAnswerOption());
+                goods.put("数量",answer.getAmount());
+                goods.put("总额",answer.getAmount()*answer.getValue());
+                goodsList.add(goods);
+                map.put(answer.getTitle(),goodsList);
+                userMap.put(answer.getRespondentId(),map);
+            }
+            Map<String,Object> map = null;
+            if(typeMap.containsKey(answer.getTitle())){
+                map = (Map) typeMap.get(answer.getTitle());
+                if(map.containsKey(answer.getAnswerOption())){
+                    int count = (int) map.get(answer.getAnswerOption());
+                    map.put(answer.getAnswerOption(),count+answer.getAmount());
+                }else{
+                    map.put(answer.getAnswerOption(),answer.getAmount());
+                }
+            }else{
+                map = new HashMap<>();
+                map.put(answer.getAnswerOption(),answer.getAmount());
+                typeMap.put(answer.getTitle(),map);
+            }
+        }
+        maps.put("总计金额",money);
+        maps.put("按分类统计",typeMap);
+        maps.put("按人员统计",userMap);
         return maps;
     }
 
